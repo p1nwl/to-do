@@ -59,6 +59,15 @@ function addTodo(text, category) {
   todos.push(todo);
 }
 
+function deleteTodo(id) {
+  todos.forEach((todo) => {
+    if (todo.id === id) {
+      todo.deleted = true;
+      todos = todos.filter(todo => todo.deleted !== true)
+    }
+  });
+}
+
 function archiveTodo(id) {
   todos.forEach((todo) => {
     if (todo.id === id) {
@@ -71,14 +80,6 @@ function unarchiveTodo(id) {
   todos.forEach((todo) => {
     if (todo.id === id) {
       todo.done = false;
-    }
-  });
-}
-
-function deleteTodo(id) {
-  todos.forEach((todo) => {
-    if (todo.id === id) {
-      todo;
     }
   });
 }
@@ -96,28 +97,29 @@ function render() {
     //     `
     // if (element.done === true) return;
     let div = document.createElement("div");
-    div.classList.add("todos");
+    let p = document.createElement("p");
+    let deleteButton = document.createElement("button");
+    let archiveButton = document.createElement("button")
 
+    div.classList.add("todos");
+    deleteButton.classList.add("todo-delete-button");
+    archiveButton.classList.add("todo-archive-button")
+
+    deleteButton.setAttribute("data-id", element.id);
+    archiveButton.setAttribute("data-id", element.id);
+
+    div.append(p);
+    div.append(deleteButton);
+    // p.append(archiveButton);
+    p.append(element.text);
+    
     if (element.done) {
+      deleteButton.textContent = "Return";
       todosArchive.append(div);
     } else {
+      deleteButton.textContent = "Done";
       todosContent.append(div);
     }
-
-    let p = document.createElement("p");
-    div.append(p);
-    p.append(element.text);
-
-    let button = document.createElement("button");
-    button.classList.add("todo-remove");
-    if (element.done) {
-      button.textContent = "Return";
-    } else {
-      button.textContent = "Done";
-    }
-
-    button.setAttribute("data-id", element.id);
-    div.append(button);
   });
 
   toLocalStorage();

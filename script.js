@@ -4,11 +4,19 @@ const todoInput = document.getElementById("todo-input");
 const todoSelect = document.getElementById("todoSelect");
 const todosArchive = document.getElementById("todo-archive");
 
-let todos = [];
+let todos = new Map();
+let archive = new Map();
 
 if (localStorage.todos !== undefined) {
-  todos = JSON.parse(localStorage.getItem("todos"));
-  render();
+  todos = new Map(JSON.parse(localStorage.getItem("todos")));
+
+  renderTodoList();
+}
+
+if (localStorage.archive !== undefined) {
+  archive = new Map(JSON.parse(localStorage.getItem("archive")));
+
+  renderArchive();
 }
 
 todoInput.addEventListener("keydown", (event) => {
@@ -17,7 +25,9 @@ todoInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     addTodo(todoInput.value, todoSelect.value);
     todoInput.value = "";
-    render();
+
+    renderTodoList();
+    renderArchive();
   }
 });
 
@@ -26,7 +36,9 @@ addTodoButton.addEventListener("click", () => {
 
   addTodo(todoInput.value, todoSelect.value);
   todoInput.value = "";
-  render();
+
+  renderTodoList();
+  renderArchive();
 });
 
 todosContent.addEventListener("click", (event) => {
@@ -35,7 +47,8 @@ todosContent.addEventListener("click", (event) => {
   const id = event.target.dataset.id;
 
   archiveTodo(id);
-  render();
+  renderTodoList();
+  renderArchive();
 });
 
 todosArchive.addEventListener("click", (event) => {
@@ -44,7 +57,8 @@ todosArchive.addEventListener("click", (event) => {
   const id = event.target.dataset.id;
 
   unarchiveTodo(id);
-  render();
+  renderTodoList();
+  renderArchive();
 });
 
 function addTodo(text, category) {
@@ -56,7 +70,7 @@ function addTodo(text, category) {
     deleted: false,
   };
 
-  todos.push(todo);
+  todos.set(todo.id, todo);
 }
 
 function deleteTodo(id) {
@@ -72,61 +86,91 @@ function archiveTodo(id) {
   todos.forEach((todo) => {
     if (todo.id === id) {
       todo.done = true;
+      archive.set(todo.id, todo);
+      todos.delete(todo.id)
     }
   });
 }
 
 function unarchiveTodo(id) {
-  todos.forEach((todo) => {
+  archive.forEach((todo) => {
     if (todo.id === id) {
       todo.done = false;
+      todos.set(todo.id, todo);
+      archive.delete(todo.id)
     }
   });
 }
 
-function render() {
+function renderTodoList() {
   todosContent.innerHTML = "";
-  todosArchive.innerHTML = "";
 
   todos.forEach((element) => {
-    // todosContent.innerHTML += `
-    //     <div class="todos">
-    //         <p>${element.text}</p>
-    //         <button class="todo-remove">Done</button>
-    //     </div>
-    //     `
-    // if (element.done === true) return;
+
     let div = document.createElement("div");
     let p = document.createElement("p");
-    let deleteButton = document.createElement("button");
-    let archiveButton = document.createElement("button")
+    let archiveButton = document.createElement("button");
 
     div.classList.add("todos");
-    deleteButton.classList.add("todo-delete-button");
-    archiveButton.classList.add("todo-archive-button")
+    archiveButton.classList.add("todo-archive-button");
 
-    deleteButton.setAttribute("data-id", element.id);
     archiveButton.setAttribute("data-id", element.id);
 
     div.append(p);
-    div.append(deleteButton);
-    // p.append(archiveButton);
+    div.append(archiveButton);
     p.append(element.text);
     
     if (element.done) {
-      deleteButton.textContent = "Return";
+      archiveButton.textContent = "Return";
       todosArchive.append(div);
     } else {
-      deleteButton.textContent = "Done";
+      archiveButton.textContent = "Done";
       todosContent.append(div);
     }
   });
 
-  toLocalStorage();
-  console.log(todos);
+  toLocalStorageTodos();
 }
 
-function toLocalStorage() {
-  const string = JSON.stringify(todos);
-  localStorage.setItem("todos", string);
+function renderArchive() {
+  todosArchive.innerHTML = "";
+
+  archive.forEach((element) => {
+
+    let div = document.createElement("div");
+    let p = document.createElement("p");
+    let archiveButton = document.createElement("button");
+
+    div.classList.add("todos");
+    archiveButton.classList.add("todo-archive-button");
+
+    archiveButton.setAttribute("data-id", element.id);
+
+    div.append(p);
+    div.append(archiveButton);
+    p.append(element.text);
+    
+    if (element.done) {
+      archiveButton.textContent = "Return";
+      todosArchive.append(div);
+    } else {
+      archiveButton.textContent = "Done";
+      todosContent.append(div);
+    }
+  });
+
+  toLocalStorageArchive();
+}
+
+
+function toLocalStorageTodos() {
+  const todosString = JSON.stringify(Array.from(todos.entries()));
+
+  localStorage.setItem("todos", todosString);
+}
+
+function toLocalStorageArchive() {
+  const archiveString = JSON.stringify(Array.from(archive.entries()));
+
+  localStorage.setItem("archive", archiveString);
 }

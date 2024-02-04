@@ -47,6 +47,14 @@
   flex-direction: column;
 }
 
+.todo-archive-date-container {
+  margin-bottom: 30px;
+}
+
+.date-container-title {
+  margin-bottom: 2.5%;
+}
+
 .todo-input-card {
   border: 2px solid black;
   border-radius: 8px;

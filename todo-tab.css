@@ -89,7 +89,18 @@
   margin-bottom: 10px;
 }
 
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .todo-archive-button {
+  border-radius: 10px;
+  height: min-content;
+}
+
+.todo-delete-button {
   border-radius: 10px;
   height: min-content;
 }

@@ -3,67 +3,39 @@ const addTodoButton = document.getElementById("addTodo");
 const todoInput = document.getElementById("todo-input");
 const todoSelect = document.getElementById("todoSelect");
 const todosArchive = document.getElementById("todo-archive");
+const todoForm = document.getElementById("todoForm");
+
+const MONTH_NAME = {
+  0: "January",
+  1: "February",
+  2: "March",
+  3: "April",
+  4: "May",
+  5: "June",
+  6: "July",
+  7: "August",
+  8: "September",
+  9: "October",
+  10: "November",
+  11: "December",
+};
 
 let todos = new Map();
 let archive = new Map();
 
-if (localStorage.todos !== undefined) {
-  todos = new Map(JSON.parse(localStorage.getItem("todos")));
-  todos.forEach((todo) => {
-    todo.date = new Date(todo.date);
-  });
+initTodos();
+initArchive();
 
-  renderTodoList();
-}
-
-if (localStorage.archive !== undefined) {
-  archive = new Map(JSON.parse(localStorage.getItem("archive")));
-  archive.forEach((todo) => {
-    todo.date = new Date(todo.date);
-  });
-  renderArchive();
-}
-
-todoInput.addEventListener("keydown", (event) => {
-  if (todoInput.value === "") return;
-
-  if (event.key === "Enter") {
-    addTodo(todoInput.value, todoSelect.value);
-    todoInput.value = "";
-
-    renderTodoList();
-    renderArchive();
-  }
-});
-
-addTodoButton.addEventListener("click", () => {
-  if (todoInput.value === "") return;
+todoForm.addEventListener("submit", (event) => {
+  event.preventDefault();
 
   addTodo(todoInput.value, todoSelect.value);
   todoInput.value = "";
 
   renderTodoList();
   renderArchive();
-});
-
-todosContent.addEventListener("click", (event) => {
-  if (event.target.tagName !== "BUTTON") return;
-
-  const id = event.target.dataset.id;
-
-  archiveTodo(id);
-  renderTodoList();
-  renderArchive();
-});
-
-todosArchive.addEventListener("click", (event) => {
-  if (event.target.tagName !== "BUTTON") return;
-
-  const id = event.target.dataset.id;
-
-  unarchiveTodo(id);
-  renderTodoList();
-  renderArchive();
+  toLocalStorageTodos();
+  toLocalStorageArchive();
 });
 
 function addTodo(text, category) {
@@ -71,7 +43,7 @@ function addTodo(text, category) {
     text,
     category,
     done: false,
-    id: `${Math.random()}`,
+    id: crypto.randomUUID(),
     deleted: false,
     date: new Date(),
   };
@@ -83,7 +55,10 @@ function deleteTodo(id) {
   todos.forEach((todo) => {
     if (todo.id === id) {
       todo.deleted = true;
-      todos = todos.filter((todo) => todo.deleted !== true);
+      const deletedTodo = Array.from(todos.entries()).filter(
+        ([, value]) => !value.deleted
+      );
+      todos = new Map(deletedTodo);
     }
   });
 }
@@ -115,99 +90,91 @@ function unarchiveTodo(id) {
 
 function renderTodoList() {
   todosContent.innerHTML = "";
-
-  todos.forEach((todo) => {
-    const div = document.createElement("div");
-    const p = document.createElement("p");
-    const archiveButton = document.createElement("button");
-
-    div.classList.add("todos");
-    archiveButton.classList.add("todo-archive-button");
-    archiveButton.textContent = "Done";
-    archiveButton.setAttribute("data-id", todo.id);
-
-    div.append(p);
-    div.append(archiveButton);
-    p.append(todo.text);
-    todosContent.append(div);
-  });
-
-  toLocalStorageTodos();
+  createTodosHTML(todos);
   console.log(todos);
 }
 
 function renderArchive() {
   todosArchive.innerHTML = "";
-  let sortedArchive = new Map();
 
-  let monthName = {
-    0: "January",
-    1: "February",
-    2: "March",
-    3: "April",
-    4: "May",
-    5: "June",
-    6: "July",
-    7: "August",
-    8: "September",
-    9: "October",
-    10: "November",
-    11: "December",
-  };
+  const sortedByDate = Array.from(archive.entries())
+    .sort(([, entryA], [, entryB]) => entryB.date - entryA.date)
+    .reduce((sortedMap, [, value]) => {
+      const { date } = value;
+      const dayOfMonth = date.getDate();
+      const month = MONTH_NAME[date.getMonth()];
+      const year = date.getFullYear();
+      const dateString = `${dayOfMonth} ${month} ${year}`;
 
-  archive.forEach((todo) => {
-    let dayOfMonth = todo.date.getDate();
-    let month = todo.date.getMonth();
-    let year = todo.date.getFullYear();
+      sortedMap.set(
+        dateString,
+        (sortedMap.get(dateString) || []).concat(value)
+      );
+      return sortedMap;
+    }, new Map());
 
-    if (!sortedArchive.has(year)) {
-      sortedArchive.set(year, new Map());
-    }
+  sortedByDate.forEach((todos, date) => {
+    const dateContainer = document.createElement("div");
+    dateContainer.classList.add("todo-archive-date-container");
+    dateContainer.innerHTML = `<h3 class="date-container-title">${date}</h3>`;
 
-    let yearMap = sortedArchive.get(year);
-
-    if (!yearMap.has(month)) {
-      yearMap.set(month, new Map());
-    }
-
-    let monthMap = yearMap.get(month);
-
-    if (!monthMap.has(dayOfMonth)) {
-      monthMap.set(dayOfMonth, []);
-    }
-
-    monthMap.get(dayOfMonth).push(todo);
+    createTodosHTML(todos, dateContainer);
   });
-
-  sortedArchive.forEach((yearMap, year) => {
-    yearMap.forEach((monthMap, month) => {
-      monthMap.forEach((todos, dayOfMonth) => {
-        let dateContainer = document.createElement("div");
-        dateContainer.classList.add("todo-archive-date-container");
-        dateContainer.innerHTML = `<h3 class="date-container-title">${dayOfMonth} ${monthName[month]}, ${year}</h3>`;
-
-        todos.forEach((todo) => {
-          const div = document.createElement("div");
-          const p = document.createElement("p");
-          const archiveButton = document.createElement("button");
-
-          div.classList.add("todos");
-          archiveButton.classList.add("todo-archive-button");
-          archiveButton.textContent = "Return";
-          archiveButton.setAttribute("data-id", todo.id);
-
-          div.append(p);
-          div.append(archiveButton);
-          p.append(todo.text);
-          dateContainer.append(div);
-          todosArchive.append(dateContainer);
-        });
-      });
-    });
-  });
-
-  toLocalStorageArchive();
   console.log(archive);
+}
+
+function createTodosHTML(todos, dateContainer) {
+  todos.forEach((todo) => {
+    const div = document.createElement("div");
+    const p = document.createElement("p");
+    const archiveButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
+    const buttonContainer = document.createElement("div");
+
+    div.classList.add("todos");
+    archiveButton.classList.add("todo-archive-button");
+    deleteButton.classList.add("todo-delete-button");
+    buttonContainer.classList.add("button-container");
+
+    archiveButton.setAttribute("data-id", todo.id);
+    archiveButton.addEventListener("click", () => {
+      if (todo.done) {
+        unarchiveTodo(todo.id);
+      } else {
+        archiveTodo(todo.id);
+      }
+      renderTodoList();
+      renderArchive();
+      toLocalStorageTodos();
+      toLocalStorageArchive();
+    });
+    deleteButton.setAttribute("data-id", todo.id);
+    deleteButton.addEventListener("click", () => {
+      deleteTodo(todo.id)
+      renderTodoList();
+      renderArchive();
+      toLocalStorageTodos();
+      toLocalStorageArchive();
+    });
+
+    div.append(p);
+    p.textContent = todo.text
+
+    if (todo.done) {
+      todosArchive.append(dateContainer);
+      dateContainer.append(div);
+      div.append(archiveButton);
+
+      archiveButton.textContent = "Return";
+    } else {
+      todosContent.append(div);
+      div.append(buttonContainer);
+      buttonContainer.append(archiveButton, deleteButton);
+
+      deleteButton.textContent = "Delete";
+      archiveButton.textContent = "Done";
+    }
+  });
 }
 
 function toLocalStorageTodos() {
@@ -220,4 +187,33 @@ function toLocalStorageArchive() {
   const archiveString = JSON.stringify(Array.from(archive.entries()));
 
   localStorage.setItem("archive", archiveString);
+}
+
+function initTodos() {
+  try {
+    if (localStorage.todos !== undefined) {
+      todos = new Map(JSON.parse(localStorage.getItem("todos")));
+      todos.forEach((todo) => {
+        todo.date = new Date(todo.date);
+      });
+
+      renderTodoList();
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function initArchive() {
+  try {
+    if (localStorage.archive !== undefined) {
+      archive = new Map(JSON.parse(localStorage.getItem("archive")));
+      archive.forEach((todo) => {
+        todo.date = new Date(todo.date);
+      });
+      renderArchive();
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }

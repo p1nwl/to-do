@@ -15,13 +15,10 @@
   </head>
   <body>
     <div class="container">
-      <div class="tab">
+      <div class="tab" id="tab">
         <div class="tab-header">
-          <input type="radio" name="to-do-list" id="to-do" value="" checked />
-          <label for="to-do">My To-Do List</label>
-
-          <input type="radio" name="to-do-list" id="archive" value="" />
-          <label for="archive"> To-Do Archive</label>
+          <button id="to-do" class="switch-button">My To-Do List</button>
+          <button id="archive" class="switch-button"> To-Do Archive</button>
         </div>
 
         <div class="my-todos checked" id="myTodos">
@@ -47,12 +44,9 @@
           </form>
           <div class="todo-content" id="todo-content"></div>
         </div>
-        <div class="todo-archive" id="todo-archive">
-          <div>In progress...</div>
-        </div>
+        <div class="todo-archive-container" id="todo-archive-container"></div>
       </div>
     </div>
-
     <script src="tabs.js"></script>
     <script src="script.js"></script>
   </body>

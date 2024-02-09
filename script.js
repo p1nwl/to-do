@@ -2,7 +2,7 @@ const todosContent = document.getElementById("todo-content");
 const addTodoButton = document.getElementById("addTodo");
 const todoInput = document.getElementById("todo-input");
 const todoSelect = document.getElementById("todoSelect");
-const todosArchive = document.getElementById("todo-archive");
+const todosArchive = document.getElementById("todo-archive-container");
 const todoForm = document.getElementById("todoForm");
 
 const MONTH_NAME = {
@@ -135,6 +135,7 @@ function createTodosHTML(todos, dateContainer) {
     archiveButton.classList.add("todo-archive-button");
     deleteButton.classList.add("todo-delete-button");
     buttonContainer.classList.add("button-container");
+    p.classList.add("todo-text")
 
     archiveButton.setAttribute("data-id", todo.id);
     archiveButton.addEventListener("click", () => {

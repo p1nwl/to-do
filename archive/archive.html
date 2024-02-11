@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../todo-tab.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lemon&display=swap"
+      rel="stylesheet"
+    />
+    <title>Archive</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="tab" id="tab">
+        <div class="tab-header">
+          <a href="../todos/todos.html" id="to-do" class="switch-button"
+            >My To-Do List</a
+          >
+          <a href="archive.html" id="archive" class="switch-button selected">
+            To-Do Archive</a
+          >
+        </div>
+        <div class="my-todos hidden" id="myTodos">
+          <form class="todo-input-card" id="todoForm">
+            <input
+              type="text"
+              placeholder="To-do text..."
+              id="todo-input"
+              name="todo-input-field"
+              required
+            />
+            <select
+              name="todo-select"
+              class="todo-type-selector"
+              id="todoSelect"
+            >
+              <option value="Important">Important</option>
+              <option value="Unimportant">Unimportant</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Non-urgent">Non-urgent</option>
+            </select>
+            <button id="addTodo" class="todo-btn" type="submit">Add</button>
+          </form>
+          <div class="todo-content" id="todo-content"></div>
+        </div>
+        <div class="todo-archive" id="todo-archive"></div>
+      </div>
+    </div>
+    <script type="module" src="../script.js"></script>
+  </body>
+</html>

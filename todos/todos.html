@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="todo-tab.css" />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../todo-tab.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,10 +17,13 @@
     <div class="container">
       <div class="tab" id="tab">
         <div class="tab-header">
-          <button id="to-do" class="switch-button">My To-Do List</button>
-          <button id="archive" class="switch-button"> To-Do Archive</button>
+          <a href="index.html" id="to-do" class="switch-button selected"
+            >My To-Do List</a
+          >
+          <a href="../archive/archive.html" id="archive" class="switch-button">
+            To-Do Archive</a
+          >
         </div>
-
         <div class="my-todos checked" id="myTodos">
           <form class="todo-input-card" id="todoForm">
             <input
@@ -44,10 +47,9 @@
           </form>
           <div class="todo-content" id="todo-content"></div>
         </div>
-        <div class="todo-archive-container" id="todo-archive-container"></div>
       </div>
+      <div class="todo-archive hidden" id="todo-archive"></div>
     </div>
-    <script src="tabs.js"></script>
-    <script src="script.js"></script>
+    <script src="../script.js"></script>
   </body>
 </html>

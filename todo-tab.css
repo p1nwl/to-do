@@ -32,19 +32,22 @@
   width: 100%;
   height: 90%;
   padding: 15px;
+  margin-bottom: 5px;
 
   display: none;
   flex-direction: column;
   overflow: auto;
 }
 
-.todo-archive-container {
+.todo-archive {
   width: 100%;
   height: 90%;
   padding: 15px;
+  margin-bottom: 5px;
 
-  display: none;
+  display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 
 .todo-archive-date-container {
@@ -135,12 +138,16 @@ select {
 }
 
 .switch-button {
-  border: none;
-  background-color: white;
+  text-decoration: none;
+  color: black;
 }
 
-.switch-button.checked {
-  border-bottom: 2px solid black;
+.selected {
+  border-bottom: 3px solid black;
+}
+
+.hidden {
+  display: none;
 }
 
 @media (min-width: 575.98px) {

@@ -1,9 +1,11 @@
 const todosContent = document.getElementById("todo-content");
-const addTodoButton = document.getElementById("addTodo");
+const todosArchive = document.getElementById("todo-archive");
 const todoInput = document.getElementById("todo-input");
 const todoSelect = document.getElementById("todoSelect");
-const todosArchive = document.getElementById("todo-archive-container");
 const todoForm = document.getElementById("todoForm");
+
+let todos = new Map();
+let archive = new Map();
 
 const MONTH_NAME = {
   0: "January",
@@ -19,9 +21,6 @@ const MONTH_NAME = {
   10: "November",
   11: "December",
 };
-
-let todos = new Map();
-let archive = new Map();
 
 initTodos();
 initArchive();
@@ -51,78 +50,6 @@ function addTodo(text, category) {
   todos.set(todo.id, todo);
 }
 
-function deleteTodo(id) {
-  todos.forEach((todo) => {
-    if (todo.id === id) {
-      todo.deleted = true;
-      const deletedTodo = Array.from(todos.entries()).filter(
-        ([, value]) => !value.deleted
-      );
-      todos = new Map(deletedTodo);
-    }
-  });
-}
-
-function archiveTodo(id) {
-  todos.forEach((todo) => {
-    if (todo.id === id) {
-      todo.done = true;
-      const currentDate = new Date();
-      todo.date = new Date();
-
-      archive.set(todo.id, todo);
-      todos.delete(todo.id);
-    }
-  });
-}
-
-function unarchiveTodo(id) {
-  archive.forEach((todo) => {
-    if (todo.id === id) {
-      todo.done = false;
-      todo.date = "";
-
-      todos.set(todo.id, todo);
-      archive.delete(todo.id);
-    }
-  });
-}
-
-function renderTodoList() {
-  todosContent.innerHTML = "";
-  createTodosHTML(todos);
-  console.log(todos);
-}
-
-function renderArchive() {
-  todosArchive.innerHTML = "";
-
-  const sortedByDate = Array.from(archive.entries())
-    .sort(([, entryA], [, entryB]) => entryB.date - entryA.date)
-    .reduce((sortedMap, [, value]) => {
-      const { date } = value;
-      const dayOfMonth = date.getDate();
-      const month = MONTH_NAME[date.getMonth()];
-      const year = date.getFullYear();
-      const dateString = `${dayOfMonth} ${month} ${year}`;
-
-      sortedMap.set(
-        dateString,
-        (sortedMap.get(dateString) || []).concat(value)
-      );
-      return sortedMap;
-    }, new Map());
-
-  sortedByDate.forEach((todos, date) => {
-    const dateContainer = document.createElement("div");
-    dateContainer.classList.add("todo-archive-date-container");
-    dateContainer.innerHTML = `<h3 class="date-container-title">${date}</h3>`;
-
-    createTodosHTML(todos, dateContainer);
-  });
-  console.log(archive);
-}
-
 function createTodosHTML(todos, dateContainer) {
   todos.forEach((todo) => {
     const div = document.createElement("div");
@@ -135,7 +62,7 @@ function createTodosHTML(todos, dateContainer) {
     archiveButton.classList.add("todo-archive-button");
     deleteButton.classList.add("todo-delete-button");
     buttonContainer.classList.add("button-container");
-    p.classList.add("todo-text")
+    p.classList.add("todo-text");
 
     archiveButton.setAttribute("data-id", todo.id);
     archiveButton.addEventListener("click", () => {
@@ -151,7 +78,7 @@ function createTodosHTML(todos, dateContainer) {
     });
     deleteButton.setAttribute("data-id", todo.id);
     deleteButton.addEventListener("click", () => {
-      deleteTodo(todo.id)
+      deleteTodo(todo.id);
       renderTodoList();
       renderArchive();
       toLocalStorageTodos();
@@ -159,7 +86,7 @@ function createTodosHTML(todos, dateContainer) {
     });
 
     div.append(p);
-    p.textContent = todo.text
+    p.textContent = todo.text;
 
     if (todo.done) {
       todosArchive.append(dateContainer);
@@ -178,16 +105,40 @@ function createTodosHTML(todos, dateContainer) {
   });
 }
 
-function toLocalStorageTodos() {
-  const todosString = JSON.stringify(Array.from(todos.entries()));
-
-  localStorage.setItem("todos", todosString);
+function deleteTodo(id) {
+  todos.forEach((todo) => {
+    if (todo.id === id) {
+      todo.deleted = true;
+      const deletedTodo = Array.from(todos.entries()).filter(
+        ([, value]) => !value.deleted
+      );
+      todos = new Map(deletedTodo);
+    }
+  });
 }
 
-function toLocalStorageArchive() {
-  const archiveString = JSON.stringify(Array.from(archive.entries()));
+function archiveTodo(id) {
+  todos.forEach((todo) => {
+    if (todo.id === id) {
+      todo.done = true;
+      todo.date = new Date();
 
-  localStorage.setItem("archive", archiveString);
+      archive.set(todo.id, todo);
+      todos.delete(todo.id);
+    }
+  });
+}
+
+function unarchiveTodo(id) {
+  archive.forEach((todo) => {
+    if (todo.id === id) {
+      todo.done = false;
+      todo.date = "";
+
+      todos.set(todo.id, todo);
+      archive.delete(todo.id);
+    }
+  });
 }
 
 function initTodos() {
@@ -217,4 +168,49 @@ function initArchive() {
   } catch (error) {
     console.log(error);
   }
+}
+
+function renderArchive() {
+  todosArchive.innerHTML = "";
+
+  const sortedByDate = Array.from(archive.entries())
+    .sort(([, entryA], [, entryB]) => entryB.date - entryA.date)
+    .reduce((sortedMap, [, value]) => {
+      const { date } = value;
+      const dayOfMonth = date.getDate();
+      const month = MONTH_NAME[date.getMonth()];
+      const year = date.getFullYear();
+      const dateString = `${dayOfMonth} ${month} ${year}`;
+
+      sortedMap.set(
+        dateString,
+        (sortedMap.get(dateString) || []).concat(value)
+      );
+      return sortedMap;
+    }, new Map());
+
+  sortedByDate.forEach((todos, date) => {
+    const dateContainer = document.createElement("div");
+    dateContainer.classList.add("todo-archive-date-container");
+    dateContainer.innerHTML = `<h3 class="date-container-title">${date}</h3>`;
+
+    createTodosHTML(todos, dateContainer);
+  });
+}
+
+function renderTodoList() {
+  todosContent.innerHTML = "";
+  createTodosHTML(todos);
+}
+
+function toLocalStorageTodos() {
+  const todosString = JSON.stringify(Array.from(todos.entries()));
+
+  localStorage.setItem("todos", todosString);
+}
+
+function toLocalStorageArchive() {
+  const archiveString = JSON.stringify(Array.from(archive.entries()));
+
+  localStorage.setItem("archive", archiveString);
 }
